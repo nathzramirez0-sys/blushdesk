@@ -68,4 +68,13 @@ class BuyerFormDialogTest {
         assertNull(saved)
         compose.onNodeWithText("Add a contact number or a Facebook name", useUnmergedTree = true).assertExists()
     }
+
+    @Test
+    fun cancel_after_typing_asks_before_discarding() {
+        // The form was given a name in setUp, so it has something to lose.
+        compose.onNode(hasText("Cancel") and hasClickAction()).performClick()
+
+        compose.onNodeWithText("Discard changes?").assertExists()
+        assertNull(saved)
+    }
 }

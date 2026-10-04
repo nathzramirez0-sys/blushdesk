@@ -82,7 +82,10 @@ accepts that, but Excel for Android refuses such a file and calls it password-pr
 dashboard on the right. Windows narrower than 600dp (phone, split screen) switch to one pane at a
 time with a back arrow. This matters because Android 16+ ignores orientation locks on large
 screens. An open form keeps what was typed when Android recreates the screen (a display-size
-change) or closes the app in the background. The selected buyer and order come back too.
+change) or closes the app in the background. The selected buyer and order come back too. Once
+something has been typed, Back and Cancel ask "Discard changes?" before closing the form. With a
+floating keyboard, Back closes the form rather than the keyboard, so this guards against losing a
+half-entered order by accident.
 
 **Errors.** Messages are written for the operator. A broken rule, such as "Enter a valid phone
 number" or "Mark the order as paid before issuing a receipt", is shown as written. Any other
@@ -254,7 +257,7 @@ rules, install the release APK and do an Excel export and a receipt before shipp
 
 ```bash
 ./gradlew :app:testDebugUnitTest            # 72 JVM tests, no device needed
-./gradlew :app:connectedDebugAndroidTest    # 73 tests on a running emulator or device
+./gradlew :app:connectedDebugAndroidTest    # 78 tests on a running emulator or device
 ```
 
 - **Unit tests:**
@@ -272,6 +275,7 @@ rules, install the release APK and do an Excel export and a receipt before shipp
   - photo import, Downloads saving, FileProvider rules
   - the screens, with Compose UI tests:
     - the order form: a new line scrolls into view with the cursor in it, totals follow what is typed, saving hands over every line
+    - closing a form: an untouched or unchanged form closes at once; one with typed input asks first, and "Keep editing" keeps it
     - the buyer form: a contact number or a Facebook name
     - the whole screen keeping an open form and what was typed when it is recreated
 
