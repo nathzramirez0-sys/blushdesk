@@ -1,9 +1,13 @@
-# BlushDesk
+# FergBentables
 
 An offline Android tablet app for running a showroom counter. It keeps a list of buyers, records
 what they bought, follows each order from processing to delivery, prints a PDF receipt for paid
 orders and exports everything to Excel. Built with Kotlin, Jetpack Compose (Material 3) and Room,
 with a custom pink design system.
+
+The app started as BlushDesk, and the code and repository keep that working name (package
+`com.blushdesk.app`). Changing the application id would make Android treat it as a different app,
+so copies already in use could not be updated without losing their records.
 
 ![Dual-pane dashboard](docs/screenshots/dashboard.png)
 
@@ -43,7 +47,7 @@ otherwise, and the generator itself refuses unpaid orders. The A4 receipt has:
 - purchase date and time, payment method, payment status and fulfillment status
 - a semi-transparent PAID stamp
 
-The PDF is written to the app's private cache, copied to `Download/BlushDesk/`, and can be opened
+The PDF is written to the app's private cache, copied to `Download/FergBentables/`, and can be opened
 (to print) or shared from the app.
 
 **Excel export.** "Export to Excel" in the top bar opens a dialog that lists what the workbook

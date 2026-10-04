@@ -73,7 +73,7 @@ class DocumentServiceAndroidTest {
 
         assertTrue(receipt.file.exists())
         assertEquals("Receipt_BD-${orderId.toString().padStart(6, '0')}_Ana_Reyes.pdf", receipt.displayName)
-        assertEquals("Download/BlushDesk/${receipt.displayName}", receipt.savedTo)
+        assertEquals("Download/FergBentables/${receipt.displayName}", receipt.savedTo)
 
         // Another app would read it through this URI; prove the FileProvider config really serves it.
         val uri = AppFiles.uriFor(context, receipt.file)
@@ -110,7 +110,7 @@ class DocumentServiceAndroidTest {
 
         val export = service.createWorkbook()
 
-        assertTrue(export.displayName.matches(Regex("BlushDesk_Export_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.xlsx")))
+        assertTrue(export.displayName.matches(Regex("FergBentables_Export_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.xlsx")))
         val uri = AppFiles.uriFor(context, export.file)
         val bytes = context.contentResolver.openInputStream(uri)!!.use { it.readBytes() }
         assertEquals("PK", String(bytes, 0, 2)) // a zip container, which is what .xlsx is

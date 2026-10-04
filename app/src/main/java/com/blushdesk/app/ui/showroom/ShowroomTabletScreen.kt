@@ -58,6 +58,7 @@ import com.blushdesk.app.ui.order.EditOrderDialog
 import com.blushdesk.app.ui.order.OrderActions
 import com.blushdesk.app.ui.order.ReceiptReadyDialog
 import com.blushdesk.app.ui.theme.Dimens
+import com.blushdesk.app.utils.APP_NAME
 import com.blushdesk.app.utils.AppFiles
 import com.blushdesk.app.utils.Formats
 import com.blushdesk.app.utils.ReceiptDocument
@@ -156,7 +157,7 @@ fun ShowroomTabletScreen(viewModel: ShowroomViewModel) {
                     share(
                         file = event.export.file,
                         mime = AppFiles.MIME_XLSX,
-                        subject = "BlushDesk export ${event.export.displayName}",
+                        subject = "$APP_NAME export ${event.export.displayName}",
                         title = "Share Excel export",
                         noAppMessage = "No app on this tablet can receive the Excel file.",
                     )
@@ -434,7 +435,7 @@ private fun ShowroomTopBar(
                     )
                 }
                 Column(modifier = Modifier.padding(start = Dimens.spaceM)) {
-                    Text("BlushDesk", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
+                    Text(APP_NAME, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
                     if (!compact) {
                         Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

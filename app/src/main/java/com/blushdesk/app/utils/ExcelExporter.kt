@@ -67,7 +67,7 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
                 XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook)
 
                 workbook.properties.coreProperties.apply {
-                    creator = "BlushDesk"
+                    creator = APP_NAME
                     title = "${snapshot.operator.storeName.ifBlank { "Showroom" }} export"
                 }
                 FileOutputStream(raw).use { workbook.write(it) }

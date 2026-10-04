@@ -133,7 +133,7 @@ class StorageAndroidTest {
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
             arrayOf(MediaStore.Downloads._ID, MediaStore.Downloads.DISPLAY_NAME),
             "${MediaStore.Downloads.DISPLAY_NAME} LIKE ? AND ${MediaStore.Downloads.RELATIVE_PATH} = ?",
-            arrayOf(namePattern, "${Environment.DIRECTORY_DOWNLOADS}/BlushDesk/"),
+            arrayOf(namePattern, "${Environment.DIRECTORY_DOWNLOADS}/FergBentables/"),
             null,
         )?.use { while (it.moveToNext()) rows += it.getLong(0) to it.getString(1) }
         return rows
@@ -153,7 +153,7 @@ class StorageAndroidTest {
         val second = File(context.cacheDir, "second.bin").also { created += it; it.writeText("short") }
 
         val location = saver.save(first, "androidtest-doc.pdf", AppFiles.MIME_PDF)
-        assertEquals("Download/BlushDesk/androidtest-doc.pdf", location)
+        assertEquals("Download/FergBentables/androidtest-doc.pdf", location)
         val rows = downloadsRows("androidtest-doc.pdf")
         assertEquals(1, rows.size)
 

@@ -11,7 +11,7 @@ import java.io.File
 data class ReceiptDocument(
     val file: File,
     val displayName: String,
-    /** "Download/BlushDesk/<name>", or null if the copy to Downloads failed (the local file is still good). */
+    /** "Download/<APP_NAME>/<name>", or null if the copy to Downloads failed (the local file is still good). */
     val savedTo: String?,
 )
 
@@ -66,7 +66,7 @@ class AndroidDocumentService(
         if (snapshot.buyers.isEmpty()) throw UserFacingException("There is nothing to export yet. Add a buyer first.")
 
         val folder = AppFiles.cacheDir(context, AppFiles.EXPORTS_DIR)
-        val name = "BlushDesk_Export_${Formats.fileStamp(snapshot.takenAt)}.xlsx"
+        val name = "${APP_NAME}_Export_${Formats.fileStamp(snapshot.takenAt)}.xlsx"
         val file = excel.export(File(folder, name), snapshot)
         AppFiles.prune(folder, keep = 5)
         return ExportDocument(file, name)

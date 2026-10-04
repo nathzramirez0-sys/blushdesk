@@ -162,7 +162,7 @@ class FakeDocuments : DocumentService {
     override suspend fun createReceipt(orderId: Long): ReceiptDocument {
         failure?.let { throw it }
         receiptsRequested += orderId
-        return ReceiptDocument(File("receipt_$orderId.pdf"), "receipt_$orderId.pdf", "Download/BlushDesk/receipt_$orderId.pdf")
+        return ReceiptDocument(File("receipt_$orderId.pdf"), "receipt_$orderId.pdf", "Download/FergBentables/receipt_$orderId.pdf")
     }
 
     override suspend fun createWorkbook(): ExportDocument {
