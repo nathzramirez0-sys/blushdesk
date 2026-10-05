@@ -5,7 +5,7 @@ what they bought, follows each order from processing to delivery, prints a PDF r
 orders and exports everything to Excel. Built with Kotlin, Jetpack Compose (Material 3) and Room,
 with a custom pink design system.
 
-The app started as BlushDesk, and the code and repository keep that working name (package
+The app started as BlushDesk, and the code keeps that working name (package
 `com.blushdesk.app`). Changing the application id would make Android treat it as a different app,
 so copies already in use could not be updated without losing their records.
 
