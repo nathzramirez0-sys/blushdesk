@@ -16,7 +16,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
-        android:name=".BlushDeskApp"
+        android:name=".FergBentablesApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BlushDesk">
+        android:theme="@style/Theme.FergBentables">
 
         <!--
             Landscape is the designed orientation. Android 16 ignores orientation locks on large

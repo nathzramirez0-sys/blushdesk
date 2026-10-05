@@ -5,8 +5,8 @@ what they bought, follows each order from processing to delivery, prints a PDF r
 orders and exports everything to Excel. Built with Kotlin, Jetpack Compose (Material 3) and Room,
 with a custom pink design system.
 
-The app started as BlushDesk, and the code keeps that working name (package
-`com.blushdesk.app`). Changing the application id would make Android treat it as a different app,
+The app started as BlushDesk. Only its package name, `com.blushdesk.app`, keeps that working
+name. Changing the application id would make Android treat it as a different app,
 so copies already in use could not be updated without losing their records.
 
 ![Dual-pane dashboard](docs/screenshots/dashboard.png)
@@ -138,7 +138,7 @@ app/src/main/java/com/blushdesk/app/
 ├── utils/                PdfReceiptGenerator, ExcelExporter, DocumentService, Money, Validation,
 │                         Formats, PhotoStorage, DownloadsSaver, AppFiles, Sharing
 ├── di/                   AppContainer
-└── MainActivity.kt, BlushDeskApp.kt
+└── MainActivity.kt, FergBentablesApp.kt
 ```
 
 Data flows one way. Room emits `Flow`s, `ShowroomViewModel` combines them into one immutable
