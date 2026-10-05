@@ -56,8 +56,8 @@ Files, Quick Share, ...):
 
 | Sheet    | Columns / contents |
 |----------|--------------------|
-| Items    | Opens first. Each order's products as Product Name, Quantity, Price, Total Amount, newest order first, with an order total under each order and a grand total at the end |
-| Buyers   | Buyer ID, Full Name, Contact Number, Facebook Name, Email, Date Added, Number of Orders |
+| Items    | Opens first. Each order's products as Product Name, Quantity, Price, Total Amount, newest order first, with an order total under each order (marked Paid or Not Yet Paid) and a grand total at the end |
+| Buyers   | Buyer ID, Full Name, Contact Number, Facebook Name, Email, Date Added, Number of Orders, Payment Status |
 | Orders   | One row per product line: Order ID, Buyer ID, Buyer Name, Product, Unit Price, Quantity, Total Amount (that line), Purchase Date, Purchase Time, Payment Mode, Payment Status, Fulfillment Status, plus Order Total |
 | Operator | Operator Name, Store Name, Email, Phone Number |
 | Summary  | Total Buyers, Total Orders, Paid / Unpaid / Pending Orders, Processing / Preparing / Delivered Orders, Total Recorded Sales |
@@ -66,7 +66,9 @@ The Items sheet was added to read orders on a tablet. Its totals are Excel formu
 recalculate if someone edits a quantity or price. The app also stores each formula's result, so
 previewers that never calculate (mail and Drive viewers) still show the numbers. The Orders sheet
 keeps the specification's twelve columns. "Order Total" was added when orders gained several
-products, and "Facebook Name" when buyers could be reached on Facebook. Headers are styled and
+products, "Facebook Name" when buyers could be reached on Facebook, and "Payment Status" so a
+printout shows who still owes: a buyer is Paid once every order is paid, Not Yet Paid while any
+order is Unpaid or Pending, and "No orders" before their first order. Headers are styled and
 frozen, the Buyers and Orders tables have filters, money uses a peso currency format, dates and
 times are real Excel dates, and status cells are color coded.
 
@@ -256,7 +258,7 @@ rules, install the release APK and do an Excel export and a receipt before shipp
 ## Tests
 
 ```bash
-./gradlew :app:testDebugUnitTest            # 72 JVM tests, no device needed
+./gradlew :app:testDebugUnitTest            # 74 JVM tests, no device needed
 ./gradlew :app:connectedDebugAndroidTest    # 78 tests on a running emulator or device
 ```
 
