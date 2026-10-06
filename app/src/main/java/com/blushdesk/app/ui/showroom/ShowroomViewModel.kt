@@ -22,6 +22,7 @@ import com.blushdesk.app.domain.model.PaymentStatus
 import com.blushdesk.app.domain.model.UserFacingException
 import com.blushdesk.app.domain.repository.ShowroomRepository
 import com.blushdesk.app.utils.DocumentService
+import com.blushdesk.app.utils.ExportDocument
 import com.blushdesk.app.utils.PhotoStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -213,12 +214,22 @@ class ShowroomViewModel(
         }
     }
 
-    fun exportToExcel() {
+    /** Builds the workbook and hands it to the share sheet (email, Drive, Messenger, ...). */
+    fun shareExcel() = export("Couldn't create the Excel file. Please try again.") { workbook ->
+        _events.send(UiEvent.ShareWorkbook(workbook))
+    }
+
+    /** Builds the workbook and saves it in Download/<APP_NAME> on this device. */
+    fun downloadExcel() = export("Couldn't save the Excel file to this device. Please try again.") { workbook ->
+        _events.send(UiEvent.WorkbookSaved(workbook, savedTo = documents.saveToDownloads(workbook)))
+    }
+
+    private fun export(failure: String, deliver: suspend (ExportDocument) -> Unit) {
         if (busy.value.exporting) return
         busy.update { it.copy(exporting = true) }
-        act("Couldn't create the Excel file. Please try again.") {
+        act(failure) {
             try {
-                _events.send(UiEvent.ShareWorkbook(documents.createWorkbook()))
+                deliver(documents.createWorkbook())
             } finally {
                 busy.update { it.copy(exporting = false) }
             }

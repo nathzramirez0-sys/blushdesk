@@ -15,7 +15,7 @@ data class ReceiptDocument(
     val savedTo: String?,
 )
 
-/** A generated workbook, saved locally and ready for the share sheet. */
+/** A generated workbook, saved locally and ready for the share sheet or for Downloads. */
 data class ExportDocument(val file: File, val displayName: String)
 
 /**
@@ -28,6 +28,9 @@ interface DocumentService {
 
     /** The .xlsx with every record in the database. */
     suspend fun createWorkbook(): ExportDocument
+
+    /** Copies [export] to Downloads and returns where it landed ("Download/<APP_NAME>/<name>"). */
+    suspend fun saveToDownloads(export: ExportDocument): String
 }
 
 class AndroidDocumentService(
@@ -71,6 +74,10 @@ class AndroidDocumentService(
         AppFiles.prune(folder, keep = 5)
         return ExportDocument(file, name)
     }
+
+    // Unlike a receipt, the workbook was asked for as a download, so a failed copy is the action failing.
+    override suspend fun saveToDownloads(export: ExportDocument): String =
+        downloads.save(export.file, export.displayName, AppFiles.MIME_XLSX)
 
     private companion object {
         const val TAG = "DocumentService"

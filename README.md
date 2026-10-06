@@ -51,8 +51,14 @@ The PDF is written to the app's private cache, copied to `Download/FergBentables
 (to print) or shared from the app.
 
 **Excel export.** "Export to Excel" in the top bar opens a dialog that lists what the workbook
-contains. It then writes a formatted `.xlsx` and opens the Android share sheet (Gmail, Drive,
-Files, Quick Share, ...):
+contains and offers two ways to get it:
+
+- **Download to device** saves the `.xlsx` in `Download/FergBentables/`, where the Files app (or a
+  computer on a USB cable) finds it. A dialog then names the file and can open it in the
+  installed spreadsheet app.
+- **Share** opens the Android share sheet (Gmail, Drive, Messenger, Quick Share, ...).
+
+Both hand over the same formatted workbook:
 
 | Sheet    | Columns / contents |
 |----------|--------------------|
@@ -188,7 +194,7 @@ signature-level and private to the app, and users never see it.
 - **Gallery photos** come through the Photo Picker, so the user hands over one image.
 - **Camera photos** are taken by the device's camera app, which writes to a FileProvider URI.
   The app never needs the `CAMERA` permission.
-- **Receipts** are copied into Downloads through MediaStore, which needs no storage permission on Android 10+.
+- **Receipts and downloaded Excel files** are copied into Downloads through MediaStore, which needs no storage permission on Android 10+.
 - **Sharing** uses `content://` URIs from a FileProvider, and `res/xml/file_paths.xml` exposes
   only the `receipts/`, `exports/` and `camera/` cache folders. A test checks that anything else,
   including the database, is refused.
@@ -258,8 +264,8 @@ rules, install the release APK and do an Excel export and a receipt before shipp
 ## Tests
 
 ```bash
-./gradlew :app:testDebugUnitTest            # 74 JVM tests, no device needed
-./gradlew :app:connectedDebugAndroidTest    # 78 tests on a running emulator or device
+./gradlew :app:testDebugUnitTest            # 77 JVM tests, no device needed
+./gradlew :app:connectedDebugAndroidTest    # 84 tests on a running emulator or device
 ```
 
 - **Unit tests:**
@@ -274,11 +280,12 @@ rules, install the release APK and do an Excel export and a receipt before shipp
   - the repository rules (recomputed totals, timestamps, validation, photo cleanup)
   - Apache POI on Android's runtime, formula results included
   - PDF generation rendered back to pixels
-  - photo import, Downloads saving, FileProvider rules
+  - photo import, Downloads saving (receipts and the workbook, byte for byte), FileProvider rules
   - the screens, with Compose UI tests:
     - the order form: a new line scrolls into view with the cursor in it, totals follow what is typed, saving hands over every line
     - closing a form: an untouched or unchanged form closes at once; one with typed input asks first, and "Keep editing" keeps it
     - the buyer form: a contact number or a Facebook name
+    - the export dialog: Download to device and Share as separate choices, both held back while the workbook is made or when there is nothing to export, and the "saved" dialog naming the file and folder
     - the whole screen keeping an open form and what was typed when it is recreated
 
 The PDF test writes PNG renders of each receipt to the app's `files/test-artifacts/` so a person

@@ -57,6 +57,7 @@ class DialogRestorationTest {
     private val noDocuments = object : DocumentService {
         override suspend fun createReceipt(orderId: Long): ReceiptDocument = error("unused")
         override suspend fun createWorkbook(): ExportDocument = error("unused")
+        override suspend fun saveToDownloads(export: ExportDocument): String = error("unused")
     }
 
     @Before

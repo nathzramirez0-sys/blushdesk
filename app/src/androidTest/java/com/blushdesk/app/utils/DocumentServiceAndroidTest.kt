@@ -118,6 +118,37 @@ class DocumentServiceAndroidTest {
     }
 
     @Test
+    fun workbook_can_be_saved_to_downloads_unchanged() = runBlocking {
+        seed(PaymentStatus.PENDING)
+        val export = service.createWorkbook()
+        val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        try {
+            val savedTo = service.saveToDownloads(export)
+
+            assertEquals("Download/FergBentables/${export.displayName}", savedTo)
+            val id = context.contentResolver.query(
+                collection, arrayOf(MediaStore.Downloads._ID, MediaStore.Downloads.MIME_TYPE, MediaStore.Downloads.IS_PENDING),
+                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} = ?",
+                arrayOf(export.displayName, "Download/FergBentables/"), null,
+            )!!.use { c ->
+                assertTrue("one file in Download/FergBentables", c.moveToFirst() && c.count == 1)
+                assertEquals(AppFiles.MIME_XLSX, c.getString(1))
+                assertEquals(0, c.getInt(2)) // finished, so the Files app and a computer can see it
+                c.getLong(0)
+            }
+            // Byte for byte the workbook that Share sends, so it opens the same way on a laptop.
+            val bytes = context.contentResolver.openInputStream(ContentUris.withAppendedId(collection, id))!!.use { it.readBytes() }
+            assertTrue(export.file.readBytes().contentEquals(bytes))
+        } finally {
+            context.contentResolver.delete(
+                collection,
+                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} = ?",
+                arrayOf(export.displayName, "Download/FergBentables/"),
+            )
+        }
+    }
+
+    @Test
     fun exporting_an_empty_database_is_refused_with_a_clear_message() {
         try {
             runBlocking { service.createWorkbook() }

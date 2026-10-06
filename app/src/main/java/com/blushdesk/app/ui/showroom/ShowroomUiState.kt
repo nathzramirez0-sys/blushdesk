@@ -45,10 +45,12 @@ data class ShowroomUiState(
     }
 }
 
-/** One-shot results the screen handles once: messages, a ready receipt, a workbook to share. */
+/** One-shot results the screen handles once: messages, a ready receipt, a workbook to share or one just saved. */
 sealed interface UiEvent {
     data class Success(val message: String) : UiEvent
     data class Error(val message: String) : UiEvent
     data class ReceiptReady(val receipt: ReceiptDocument) : UiEvent
     data class ShareWorkbook(val export: ExportDocument) : UiEvent
+    /** The workbook was copied to Downloads; [savedTo] is "Download/<APP_NAME>/<name>". */
+    data class WorkbookSaved(val export: ExportDocument, val savedTo: String) : UiEvent
 }

@@ -7,9 +7,9 @@
           - Photos from the gallery come through the system Photo Picker (the user shares one image).
           - Camera photos are taken by the device's camera app and handed back through FileProvider,
             so the CAMERA permission is never requested.
-          - Receipts are copied to Downloads through MediaStore, which needs no storage permission
-            on API 29+ (the app's minSdk).
-          - Excel files and PDFs are shared as content:// URIs, not through shared storage.
+          - Receipts and downloaded Excel files are copied to Downloads through MediaStore, which
+            needs no storage permission on API 29+ (the app's minSdk).
+          - Shared Excel files and PDFs go out as content:// URIs, not through shared storage.
         The app is fully offline, so INTERNET is not declared either.
     -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />

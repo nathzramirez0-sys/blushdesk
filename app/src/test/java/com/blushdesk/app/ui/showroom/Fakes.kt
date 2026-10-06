@@ -158,6 +158,8 @@ class FakeDocuments : DocumentService {
     var failure: Exception? = null
     val receiptsRequested = mutableListOf<Long>()
     var workbooksCreated = 0
+    var downloadFailure: Exception? = null
+    val downloaded = mutableListOf<String>()
 
     override suspend fun createReceipt(orderId: Long): ReceiptDocument {
         failure?.let { throw it }
@@ -169,6 +171,12 @@ class FakeDocuments : DocumentService {
         failure?.let { throw it }
         workbooksCreated++
         return ExportDocument(File("export.xlsx"), "export.xlsx")
+    }
+
+    override suspend fun saveToDownloads(export: ExportDocument): String {
+        downloadFailure?.let { throw it }
+        downloaded += export.displayName
+        return "Download/FergBentables/${export.displayName}"
     }
 }
 
