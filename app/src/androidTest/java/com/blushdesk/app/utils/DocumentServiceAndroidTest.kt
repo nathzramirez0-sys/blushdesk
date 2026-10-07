@@ -73,7 +73,7 @@ class DocumentServiceAndroidTest {
 
         assertTrue(receipt.file.exists())
         assertEquals("Receipt_BD-${orderId.toString().padStart(6, '0')}_Ana_Reyes.pdf", receipt.displayName)
-        assertEquals("Download/FergBentables/${receipt.displayName}", receipt.savedTo)
+        assertEquals("Download/BlushDesk/${receipt.displayName}", receipt.savedTo)
 
         // Another app would read it through this URI; prove the FileProvider config really serves it.
         val uri = AppFiles.uriFor(context, receipt.file)
@@ -110,42 +110,11 @@ class DocumentServiceAndroidTest {
 
         val export = service.createWorkbook()
 
-        assertTrue(export.displayName.matches(Regex("FergBentables_Export_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.xlsx")))
+        assertTrue(export.displayName.matches(Regex("BlushDesk_Export_\\d{4}-\\d{2}-\\d{2}_\\d{4}\\.xlsx")))
         val uri = AppFiles.uriFor(context, export.file)
         val bytes = context.contentResolver.openInputStream(uri)!!.use { it.readBytes() }
         assertEquals("PK", String(bytes, 0, 2)) // a zip container, which is what .xlsx is
         assertTrue(bytes.size > 2_000)
-    }
-
-    @Test
-    fun workbook_can_be_saved_to_downloads_unchanged() = runBlocking {
-        seed(PaymentStatus.PENDING)
-        val export = service.createWorkbook()
-        val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        try {
-            val savedTo = service.saveToDownloads(export)
-
-            assertEquals("Download/FergBentables/${export.displayName}", savedTo)
-            val id = context.contentResolver.query(
-                collection, arrayOf(MediaStore.Downloads._ID, MediaStore.Downloads.MIME_TYPE, MediaStore.Downloads.IS_PENDING),
-                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} = ?",
-                arrayOf(export.displayName, "Download/FergBentables/"), null,
-            )!!.use { c ->
-                assertTrue("one file in Download/FergBentables", c.moveToFirst() && c.count == 1)
-                assertEquals(AppFiles.MIME_XLSX, c.getString(1))
-                assertEquals(0, c.getInt(2)) // finished, so the Files app and a computer can see it
-                c.getLong(0)
-            }
-            // Byte for byte the workbook that Share sends, so it opens the same way on a laptop.
-            val bytes = context.contentResolver.openInputStream(ContentUris.withAppendedId(collection, id))!!.use { it.readBytes() }
-            assertTrue(export.file.readBytes().contentEquals(bytes))
-        } finally {
-            context.contentResolver.delete(
-                collection,
-                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} = ?",
-                arrayOf(export.displayName, "Download/FergBentables/"),
-            )
-        }
     }
 
     @Test

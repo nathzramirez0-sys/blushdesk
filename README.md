@@ -1,13 +1,9 @@
-# FergBentables
+# BlushDesk
 
 An offline Android tablet app for running a showroom counter. It keeps a list of buyers, records
 what they bought, follows each order from processing to delivery, prints a PDF receipt for paid
 orders and exports everything to Excel. Built with Kotlin, Jetpack Compose (Material 3) and Room,
 with a custom pink design system.
-
-The app started as BlushDesk. Only its package name, `com.blushdesk.app`, keeps that working
-name. Changing the application id would make Android treat it as a different app,
-so copies already in use could not be updated without losing their records.
 
 ![Dual-pane dashboard](docs/screenshots/dashboard.png)
 
@@ -47,23 +43,17 @@ otherwise, and the generator itself refuses unpaid orders. The A4 receipt has:
 - purchase date and time, payment method, payment status and fulfillment status
 - a semi-transparent PAID stamp
 
-The PDF is written to the app's private cache, copied to `Download/FergBentables/`, and can be opened
+The PDF is written to the app's private cache, copied to `Download/BlushDesk/`, and can be opened
 (to print) or shared from the app.
 
 **Excel export.** "Export to Excel" in the top bar opens a dialog that lists what the workbook
-contains and offers two ways to get it:
-
-- **Download to device** saves the `.xlsx` in `Download/FergBentables/`, where the Files app (or a
-  computer on a USB cable) finds it. A dialog then names the file and can open it in the
-  installed spreadsheet app.
-- **Share** opens the Android share sheet (Gmail, Drive, Messenger, Quick Share, ...).
-
-Both hand over the same formatted workbook:
+contains. It then writes a formatted `.xlsx` and opens the Android share sheet (Gmail, Drive,
+Files, Quick Share, ...):
 
 | Sheet    | Columns / contents |
 |----------|--------------------|
-| Items    | Opens first. Each order's products as Product Name, Quantity, Price, Total Amount, newest order first, with an order total under each order (marked Paid or Not Yet Paid) and a grand total at the end |
-| Buyers   | Buyer ID, Full Name, Contact Number, Facebook Name, Email, Date Added, Number of Orders, Payment Status |
+| Items    | Opens first. Each order's products as Product Name, Quantity, Price, Total Amount, newest order first, with an order total under each order and a grand total at the end |
+| Buyers   | Buyer ID, Full Name, Contact Number, Facebook Name, Email, Date Added, Number of Orders |
 | Orders   | One row per product line: Order ID, Buyer ID, Buyer Name, Product, Unit Price, Quantity, Total Amount (that line), Purchase Date, Purchase Time, Payment Mode, Payment Status, Fulfillment Status, plus Order Total |
 | Operator | Operator Name, Store Name, Email, Phone Number |
 | Summary  | Total Buyers, Total Orders, Paid / Unpaid / Pending Orders, Processing / Preparing / Delivered Orders, Total Recorded Sales |
@@ -72,9 +62,7 @@ The Items sheet was added to read orders on a tablet. Its totals are Excel formu
 recalculate if someone edits a quantity or price. The app also stores each formula's result, so
 previewers that never calculate (mail and Drive viewers) still show the numbers. The Orders sheet
 keeps the specification's twelve columns. "Order Total" was added when orders gained several
-products, "Facebook Name" when buyers could be reached on Facebook, and "Payment Status" so a
-printout shows who still owes: a buyer is Paid once every order is paid, Not Yet Paid while any
-order is Unpaid or Pending, and "No orders" before their first order. Headers are styled and
+products, and "Facebook Name" when buyers could be reached on Facebook. Headers are styled and
 frozen, the Buyers and Orders tables have filters, money uses a peso currency format, dates and
 times are real Excel dates, and status cells are color coded.
 
@@ -90,10 +78,7 @@ accepts that, but Excel for Android refuses such a file and calls it password-pr
 dashboard on the right. Windows narrower than 600dp (phone, split screen) switch to one pane at a
 time with a back arrow. This matters because Android 16+ ignores orientation locks on large
 screens. An open form keeps what was typed when Android recreates the screen (a display-size
-change) or closes the app in the background. The selected buyer and order come back too. Once
-something has been typed, Back and Cancel ask "Discard changes?" before closing the form. With a
-floating keyboard, Back closes the form rather than the keyboard, so this guards against losing a
-half-entered order by accident.
+change) or closes the app in the background. The selected buyer and order come back too.
 
 **Errors.** Messages are written for the operator. A broken rule, such as "Enter a valid phone
 number" or "Mark the order as paid before issuing a receipt", is shown as written. Any other
@@ -144,7 +129,7 @@ app/src/main/java/com/blushdesk/app/
 ├── utils/                PdfReceiptGenerator, ExcelExporter, DocumentService, Money, Validation,
 │                         Formats, PhotoStorage, DownloadsSaver, AppFiles, Sharing
 ├── di/                   AppContainer
-└── MainActivity.kt, FergBentablesApp.kt
+└── MainActivity.kt, BlushDeskApp.kt
 ```
 
 Data flows one way. Room emits `Flow`s, `ShowroomViewModel` combines them into one immutable
@@ -194,7 +179,7 @@ signature-level and private to the app, and users never see it.
 - **Gallery photos** come through the Photo Picker, so the user hands over one image.
 - **Camera photos** are taken by the device's camera app, which writes to a FileProvider URI.
   The app never needs the `CAMERA` permission.
-- **Receipts and downloaded Excel files** are copied into Downloads through MediaStore, which needs no storage permission on Android 10+.
+- **Receipts** are copied into Downloads through MediaStore, which needs no storage permission on Android 10+.
 - **Sharing** uses `content://` URIs from a FileProvider, and `res/xml/file_paths.xml` exposes
   only the `receipts/`, `exports/` and `camera/` cache folders. A test checks that anything else,
   including the database, is refused.
@@ -264,8 +249,8 @@ rules, install the release APK and do an Excel export and a receipt before shipp
 ## Tests
 
 ```bash
-./gradlew :app:testDebugUnitTest            # 77 JVM tests, no device needed
-./gradlew :app:connectedDebugAndroidTest    # 84 tests on a running emulator or device
+./gradlew :app:testDebugUnitTest            # 72 JVM tests, no device needed
+./gradlew :app:connectedDebugAndroidTest    # 73 tests on a running emulator or device
 ```
 
 - **Unit tests:**
@@ -280,12 +265,10 @@ rules, install the release APK and do an Excel export and a receipt before shipp
   - the repository rules (recomputed totals, timestamps, validation, photo cleanup)
   - Apache POI on Android's runtime, formula results included
   - PDF generation rendered back to pixels
-  - photo import, Downloads saving (receipts and the workbook, byte for byte), FileProvider rules
+  - photo import, Downloads saving, FileProvider rules
   - the screens, with Compose UI tests:
     - the order form: a new line scrolls into view with the cursor in it, totals follow what is typed, saving hands over every line
-    - closing a form: an untouched or unchanged form closes at once; one with typed input asks first, and "Keep editing" keeps it
     - the buyer form: a contact number or a Facebook name
-    - the export dialog: Download to device and Share as separate choices, both held back while the workbook is made or when there is nothing to export, and the "saved" dialog naming the file and folder
     - the whole screen keeping an open form and what was typed when it is recreated
 
 The PDF test writes PNG renders of each receipt to the app's `files/test-artifacts/` so a person

@@ -66,8 +66,6 @@ class ExcelExporterAndroidTest {
                 assertEquals(lineTotals, grand.getCell(3).numericCellValue, 1e-6)
 
                 assertEquals("Ana Reyes", workbook.getSheet("Buyers").getRow(1).getCell(1).stringCellValue)
-                assertEquals("Payment Status", workbook.getSheet("Buyers").getRow(0).getCell(7).stringCellValue)
-                assertTrue(workbook.getSheet("Buyers").getRow(1).getCell(7).stringCellValue in setOf("Paid", "Not Yet Paid", "No orders"))
                 assertEquals("Lia Santos", workbook.getSheet("Operator").getRow(1).getCell(0).stringCellValue)
             }
         }

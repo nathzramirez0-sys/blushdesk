@@ -60,11 +60,6 @@ internal fun BuyerFormDialog(
     val facebookError = Validation.facebookName(facebook)
     val emailError = Validation.email(email)
     val valid = listOf(nameError, contactError, facebookError, emailError).all { it == null }
-    val hasChanges = fullName != initial?.fullName.orEmpty() ||
-        contact != initial?.contactNumber.orEmpty() ||
-        facebook != initial?.facebookName.orEmpty() ||
-        email != initial?.email.orEmpty() ||
-        imageUri != initial?.profileImageUri
 
     fun cancel() {
         photoActions.discard(stagedPhoto)
@@ -75,7 +70,6 @@ internal fun BuyerFormDialog(
         title = if (initial == null) "Add buyer" else "Edit buyer",
         confirmLabel = if (initial == null) "Add buyer" else "Save",
         onDismiss = ::cancel,
-        hasUnsavedChanges = hasChanges,
         onConfirm = {
             attempted = true
             if (valid) {

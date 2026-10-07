@@ -36,7 +36,6 @@ import com.blushdesk.app.ui.order.OrderActions
 import com.blushdesk.app.ui.order.orderHistory
 import com.blushdesk.app.ui.theme.Dimens
 import com.blushdesk.app.ui.theme.ShowroomTheme
-import com.blushdesk.app.utils.APP_NAME
 import com.blushdesk.app.utils.Money
 
 /** Everything the detail pane can ask the screen to do. */
@@ -75,7 +74,7 @@ fun BuyerDetailScreen(
             } else {
                 EmptyState(
                     icon = Icons.Filled.PersonAdd,
-                    title = "Welcome to $APP_NAME",
+                    title = "Welcome to BlushDesk",
                     message = "Add your first buyer to start recording orders, receipts and exports.",
                     onTint = true,
                     action = {

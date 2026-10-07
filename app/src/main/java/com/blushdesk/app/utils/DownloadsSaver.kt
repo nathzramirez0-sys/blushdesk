@@ -18,7 +18,7 @@ import java.io.IOException
 class DownloadsSaver(private val context: Context) {
 
     /**
-     * Saves [source] as Downloads/[FOLDER]/[displayName] and returns that human-readable path.
+     * Saves [source] as Downloads/BlushDesk/[displayName] and returns that human-readable path.
      * Saving the same name again replaces the earlier copy (a regenerated receipt must not leave
      * "Receipt (1).pdf", "Receipt (2).pdf" behind).
      */
@@ -70,6 +70,6 @@ class DownloadsSaver(private val context: Context) {
     }
 
     private companion object {
-        const val FOLDER = APP_NAME
+        const val FOLDER = "BlushDesk"
     }
 }

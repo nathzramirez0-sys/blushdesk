@@ -52,16 +52,13 @@ import com.blushdesk.app.ui.components.PhotoActions
 import com.blushdesk.app.ui.components.ShowroomSnackbarHost
 import com.blushdesk.app.ui.components.show
 import com.blushdesk.app.ui.export.ExportDialog
-import com.blushdesk.app.ui.export.ExportSavedDialog
 import com.blushdesk.app.ui.operator.EditOperatorProfileDialog
 import com.blushdesk.app.ui.order.AddOrderDialog
 import com.blushdesk.app.ui.order.EditOrderDialog
 import com.blushdesk.app.ui.order.OrderActions
 import com.blushdesk.app.ui.order.ReceiptReadyDialog
 import com.blushdesk.app.ui.theme.Dimens
-import com.blushdesk.app.utils.APP_NAME
 import com.blushdesk.app.utils.AppFiles
-import com.blushdesk.app.utils.ExportDocument
 import com.blushdesk.app.utils.Formats
 import com.blushdesk.app.utils.ReceiptDocument
 import com.blushdesk.app.utils.Sharing
@@ -89,16 +86,13 @@ private sealed interface ActiveDialog {
 
     /** Not saved: the receipt is already in Downloads, so losing this dialog loses nothing. */
     data class ReceiptReady(val receipt: ReceiptDocument) : ActiveDialog
-
-    /** Not saved either, for the same reason: the workbook is already in Downloads. */
-    data class ExportSaved(val export: ExportDocument, val savedTo: String) : ActiveDialog
 }
 
 /** Saves an [ActiveDialog] as a kind and, where it has one, a record id: both fit in a Bundle. */
 private val ActiveDialogSaver = listSaver<ActiveDialog, Any>(
     save = { dialog ->
         when (dialog) {
-            ActiveDialog.None, is ActiveDialog.ReceiptReady, is ActiveDialog.ExportSaved -> emptyList()
+            ActiveDialog.None, is ActiveDialog.ReceiptReady -> emptyList()
             ActiveDialog.EditProfile -> listOf("profile")
             ActiveDialog.AddBuyer -> listOf("addBuyer")
             ActiveDialog.Export -> listOf("export")
@@ -162,12 +156,11 @@ fun ShowroomTabletScreen(viewModel: ShowroomViewModel) {
                     share(
                         file = event.export.file,
                         mime = AppFiles.MIME_XLSX,
-                        subject = "$APP_NAME export ${event.export.displayName}",
+                        subject = "BlushDesk export ${event.export.displayName}",
                         title = "Share Excel export",
                         noAppMessage = "No app on this tablet can receive the Excel file.",
                     )
                 }
-                is UiEvent.WorkbookSaved -> dialog = ActiveDialog.ExportSaved(event.export, event.savedTo)
             }
         }
     }
@@ -380,21 +373,7 @@ fun ShowroomTabletScreen(viewModel: ShowroomViewModel) {
         ActiveDialog.Export -> ExportDialog(
             summary = state.summary,
             exporting = state.exporting,
-            onDownload = viewModel::downloadExcel,
-            onShare = viewModel::shareExcel,
-            onDismiss = dismiss,
-        )
-
-        is ActiveDialog.ExportSaved -> ExportSavedDialog(
-            displayName = active.export.displayName,
-            savedTo = active.savedTo,
-            onOpen = {
-                if (Sharing.view(context, active.export.file, AppFiles.MIME_XLSX)) {
-                    dismiss()
-                } else {
-                    viewModel.reportError("No app on this tablet can open Excel files. Install Excel or Google Sheets, or use Share.")
-                }
-            },
+            onExport = viewModel::exportToExcel,
             onDismiss = dismiss,
         )
 
@@ -455,7 +434,7 @@ private fun ShowroomTopBar(
                     )
                 }
                 Column(modifier = Modifier.padding(start = Dimens.spaceM)) {
-                    Text(APP_NAME, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
+                    Text("Fergbentables", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
                     if (!compact) {
                         Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

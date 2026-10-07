@@ -5,23 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -33,31 +26,19 @@ import androidx.compose.ui.window.DialogProperties
 import com.blushdesk.app.data.local.database.ShowroomSummary
 import com.blushdesk.app.ui.components.InlineMessage
 import com.blushdesk.app.ui.theme.Dimens
-import com.blushdesk.app.utils.APP_NAME
 
 /**
- * Says what the Excel export will contain before it runs, then builds the workbook and either
- * saves it in Downloads on this device or hands it to the share sheet. Shows progress meanwhile;
- * the screen closes this dialog when the workbook is ready.
+ * Says what the Excel export will contain before it runs, shows progress while the workbook is
+ * built, and hands it to the share sheet when ready (the screen closes this dialog then).
  */
 @Composable
 fun ExportDialog(
     summary: ShowroomSummary,
     exporting: Boolean,
-    onDownload: () -> Unit,
-    onShare: () -> Unit,
+    onExport: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val nothingToExport = summary.buyerCount == 0
-    // On a phone in landscape the body is taller than the dialog, so it scrolls; the progress line
-    // and the warning sit at its end, so bring them into view when they appear.
-    val scroll = rememberScrollState()
-    LaunchedEffect(exporting, nothingToExport) {
-        if (exporting || nothingToExport) {
-            withFrameNanos { } // let the new line be laid out first
-            scroll.animateScrollTo(scroll.maxValue)
-        }
-    }
     AlertDialog(
         onDismissRequest = { if (!exporting) onDismiss() },
         properties = DialogProperties(dismissOnClickOutside = !exporting, dismissOnBackPress = !exporting),
@@ -66,10 +47,10 @@ fun ExportDialog(
         icon = { Icon(Icons.Filled.TableChart, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
         title = { Text("Export to Excel") },
         text = {
-            Column(modifier = Modifier.verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
                 Text(
-                    "Creates an .xlsx workbook from everything on this tablet. Download saves it in " +
-                        "Download/$APP_NAME on this device; Share sends it by email, to Drive or to another app.",
+                    "Creates an .xlsx workbook from everything on this tablet and opens the share sheet, so you " +
+                        "can email it, save it to Drive or Files, or send it to another app.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -91,18 +72,8 @@ fun ExportDialog(
                 }
             }
         },
-        // Two buttons, not one Row: the dialog lays its buttons out in a flow row, so on a narrow
-        // phone they wrap onto a second line instead of being squeezed.
         confirmButton = {
-            val enabled = !exporting && !nothingToExport
-            OutlinedButton(onClick = onDownload, enabled = enabled) {
-                Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(Dimens.iconMedium))
-                Text("  Download to device")
-            }
-            Button(onClick = onShare, enabled = enabled) {
-                Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(Dimens.iconMedium))
-                Text("  Share")
-            }
+            Button(onClick = onExport, enabled = !exporting && !nothingToExport) { Text("Export & share") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !exporting) { Text("Cancel") }

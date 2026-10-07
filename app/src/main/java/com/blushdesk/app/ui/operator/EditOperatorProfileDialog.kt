@@ -53,11 +53,6 @@ fun EditOperatorProfileDialog(
     val emailError = Validation.email(email)
     val phoneError = Validation.phone(phone, required = false)
     val valid = listOf(nameError, storeError, emailError, phoneError).all { it == null }
-    val hasChanges = fullName != initial.fullName ||
-        storeName != initial.storeName ||
-        email != initial.email ||
-        phone != initial.phoneNumber ||
-        imageUri != initial.profileImageUri
 
     fun cancel() {
         photoActions.discard(stagedPhoto)
@@ -68,7 +63,6 @@ fun EditOperatorProfileDialog(
         title = if (initial.isSetUp) "Edit your profile" else "Set up your profile",
         confirmLabel = "Save",
         onDismiss = ::cancel,
-        hasUnsavedChanges = hasChanges,
         onConfirm = {
             attempted = true
             if (valid) {

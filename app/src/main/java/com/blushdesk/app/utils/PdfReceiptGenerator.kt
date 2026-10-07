@@ -349,7 +349,7 @@ class PdfReceiptGenerator {
 
             line("Thank you for shopping with $storeName!", W / 2, H - 70f, 13f, BrandPalette.DEEP_MAGENTA, bold = true, align = Paint.Align.CENTER, maxWidth = W - 2 * MARGIN)
             line("This is a computer-generated receipt and does not need a signature.", W / 2, H - 52f, 9f, BrandPalette.MUTED_TEXT, align = Paint.Align.CENTER)
-            line("Generated ${Formats.dateTime(issuedAt, zone)} with $APP_NAME", W / 2, H - 38f, 8.5f, BrandPalette.MUTED_TEXT, align = Paint.Align.CENTER)
+            line("Generated ${Formats.dateTime(issuedAt, zone)} with BlushDesk", W / 2, H - 38f, 8.5f, BrandPalette.MUTED_TEXT, align = Paint.Align.CENTER)
             if (pageCount > 1) {
                 line("Page $pageNumber of $pageCount", W - MARGIN, H - 20f, 8.5f, BrandPalette.MUTED_TEXT, bold = true, align = Paint.Align.RIGHT)
             }
