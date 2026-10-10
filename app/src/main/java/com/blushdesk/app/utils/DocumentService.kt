@@ -11,11 +11,11 @@ import java.io.File
 data class ReceiptDocument(
     val file: File,
     val displayName: String,
-    /** "Download/BlushDesk/<name>", or null if the copy to Downloads failed (the local file is still good). */
+    /** "Download/<APP_NAME>/<name>", or null if the copy to Downloads failed (the local file is still good). */
     val savedTo: String?,
 )
 
-/** A generated workbook, saved locally and ready for the share sheet. */
+/** A generated workbook, saved locally and ready for the share sheet or for Downloads. */
 data class ExportDocument(val file: File, val displayName: String)
 
 /**
@@ -28,6 +28,9 @@ interface DocumentService {
 
     /** The .xlsx with every record in the database. */
     suspend fun createWorkbook(): ExportDocument
+
+    /** Copies [export] to Downloads and returns where it landed ("Download/<APP_NAME>/<name>"). */
+    suspend fun saveToDownloads(export: ExportDocument): String
 }
 
 class AndroidDocumentService(
@@ -66,11 +69,15 @@ class AndroidDocumentService(
         if (snapshot.buyers.isEmpty()) throw UserFacingException("There is nothing to export yet. Add a buyer first.")
 
         val folder = AppFiles.cacheDir(context, AppFiles.EXPORTS_DIR)
-        val name = "BlushDesk_Export_${Formats.fileStamp(snapshot.takenAt)}.xlsx"
+        val name = "${APP_NAME}_Export_${Formats.fileStamp(snapshot.takenAt)}.xlsx"
         val file = excel.export(File(folder, name), snapshot)
         AppFiles.prune(folder, keep = 5)
         return ExportDocument(file, name)
     }
+
+    // Unlike a receipt, the workbook was asked for as a download, so a failed copy is the action failing.
+    override suspend fun saveToDownloads(export: ExportDocument): String =
+        downloads.save(export.file, export.displayName, AppFiles.MIME_XLSX)
 
     private companion object {
         const val TAG = "DocumentService"

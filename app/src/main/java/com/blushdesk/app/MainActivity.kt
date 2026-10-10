@@ -14,7 +14,7 @@ import com.blushdesk.app.ui.theme.ShowroomPinkTheme
 class MainActivity : ComponentActivity() {
 
     private val viewModel: ShowroomViewModel by viewModels {
-        ShowroomViewModel.factory((application as BlushDeskApp).container)
+        ShowroomViewModel.factory((application as FergBentablesApp).container)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -12,7 +12,7 @@ import com.blushdesk.app.utils.PdfReceiptGenerator
 import com.blushdesk.app.utils.PhotoStorage
 
 /**
- * Hand-rolled dependency container, created once by [com.blushdesk.app.BlushDeskApp].
+ * Hand-rolled dependency container, created once by [com.blushdesk.app.FergBentablesApp].
  *
  * A dependency-injection framework would add a code generator for what is, here, six objects.
  * Everything is `lazy`, so nothing is built (and the database is not opened) until first use.

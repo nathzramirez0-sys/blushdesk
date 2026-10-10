@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Only the window behind Compose: it shows for a frame at launch, so it matches the app background. -->
-    <style name="Theme.BlushDesk" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.FergBentables" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/blush_lavender_blush</item>
+        <!-- Android 12+ splash: a full-size logo, since the launcher icon's bitmaps would be stretched there. -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/splash_logo</item>
         <item name="android:colorPrimary">@color/blush_vibrant_rose</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>

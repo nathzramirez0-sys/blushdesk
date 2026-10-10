@@ -116,19 +116,59 @@ class ExcelExporterTest {
             assertEquals(1_800.0, sheet.number(3, 3), 0.0) // the stored result
 
             assertEquals(ExcelExporter.ORDER_TOTAL_LABEL, sheet.text(4, 2))
+            assertEquals("Not Yet Paid", sheet.text(4, 0)) // order #11 is Pending
             assertEquals("SUM(D3:D4)", sheet.getRow(4).getCell(3).cellFormula)
             assertEquals(5_300.0, sheet.number(4, 3), 0.0)
 
             assertEquals("BD-000012 · Ben Cruz · Sep 25, 2026", sheet.text(6, 0))
             assertEquals(2_999.97, sheet.number(8, 3), 0.0) // 999.99 x 3, rounded to the cent
+            assertEquals("Not Yet Paid", sheet.text(8, 0)) // order #12 is Unpaid
             assertEquals("BD-000010 · Ana Reyes · Sep 20, 2026", sheet.text(10, 0))
             assertEquals(25_001.0, sheet.number(12, 3), 0.0)
+            assertEquals("Paid", sheet.text(12, 0)) // order #10 is Paid
 
             val grand = sheet.getRow(14)
             assertEquals("GRAND TOTAL", grand.getCell(0).stringCellValue)
             assertEquals(CellType.FORMULA, grand.getCell(3).cellType)
             assertEquals(33_300.97, grand.getCell(3).numericCellValue, 1e-9)
             assertEquals(14, sheet.lastRowNum)
+        }
+    }
+
+    @Test
+    fun `a buyer is Paid only when every order is paid`() = runTest {
+        val cara = Buyer(id = 3, fullName = "Cara Lim", contactNumber = "0919 111 2222", dateAdded = Instant.parse("2026-09-06T02:00:00Z"))
+        val dan = Buyer(id = 4, fullName = "Dan Uy", facebookName = "Dan Uy Home", dateAdded = Instant.parse("2026-09-07T02:00:00Z"))
+        val eve = Buyer(id = 5, fullName = "Eve Tan", contactNumber = "0920 333 4444", dateAdded = Instant.parse("2026-09-08T02:00:00Z"))
+        val snapshot = listOf(
+            BuyerWithOrders(cara, listOf(
+                order(20, cara, "2026-09-10T03:00:00Z", PaymentMode.CASH, PaymentStatus.PAID, FulfillmentStatus.DELIVERED, item("Lamp", "500", 1)),
+                order(21, cara, "2026-09-11T03:00:00Z", PaymentMode.ONLINE_PAYMENT, PaymentStatus.PAID, FulfillmentStatus.PREPARING, item("Rug", "900", 1)),
+            )),
+            BuyerWithOrders(dan, listOf(
+                order(22, dan, "2026-09-12T03:00:00Z", PaymentMode.CASH, PaymentStatus.PAID, FulfillmentStatus.DELIVERED, item("Vase", "300", 1)),
+                order(23, dan, "2026-09-13T03:00:00Z", PaymentMode.CASH, PaymentStatus.PENDING, FulfillmentStatus.PROCESSING, item("Clock", "700", 1)),
+            )),
+            BuyerWithOrders(eve, emptyList()),
+        )
+        XSSFWorkbook(export(snapshot).inputStream()).use { wb ->
+            val sheet = wb.getSheet("Buyers")
+            assertEquals(listOf("Paid", "Not Yet Paid", "No orders"), (1..3).map { sheet.text(it, 7) })
+            // Paid and Not Yet Paid are color-coded like the Orders sheet's Paid and Unpaid badges.
+            val orders = wb.getSheet("Orders")
+            val paidBadge = (1..orders.lastRowNum).first { orders.text(it, 10) == "Paid" }
+            assertEquals(orders.getRow(paidBadge).getCell(10).cellStyle.index, sheet.getRow(1).getCell(7).cellStyle.index)
+        }
+    }
+
+    @Test
+    fun `the buyers sheet prints landscape on one page width, payment status included`() = runTest {
+        XSSFWorkbook(export().inputStream()).use { wb ->
+            val sheet = wb.getSheet("Buyers")
+            assertTrue(sheet.printSetup.landscape)
+            assertTrue(sheet.fitToPage)
+            assertEquals(1.toShort(), sheet.printSetup.fitWidth)
+            assertEquals("A1:H3", sheet.ctWorksheet.autoFilter.ref) // the filter covers the new column too
         }
     }
 
@@ -174,13 +214,16 @@ class ExcelExporterTest {
     }
 
     @Test
-    fun `buyers sheet has the specified columns plus the Facebook name, one row per buyer`() = runTest {
+    fun `buyers sheet has the specified columns plus the Facebook name and payment status`() = runTest {
         XSSFWorkbook(export().inputStream()).use { wb ->
             val sheet = wb.getSheet("Buyers")
             assertEquals(
-                listOf("Buyer ID", "Full Name", "Contact Number", "Facebook Name", "Email", "Date Added", "Number of Orders"),
-                sheet.headers(7),
+                listOf("Buyer ID", "Full Name", "Contact Number", "Facebook Name", "Email", "Date Added", "Number of Orders", "Payment Status"),
+                sheet.headers(8),
             )
+            // Ana has a paid order and a pending one; Ben's only order is unpaid.
+            assertEquals("Not Yet Paid", sheet.text(1, 7))
+            assertEquals("Not Yet Paid", sheet.text(2, 7))
             assertEquals(2, sheet.lastRowNum)
             assertEquals(1.0, sheet.number(1, 0), 0.0)
             assertEquals("Ana Reyes", sheet.text(1, 1))

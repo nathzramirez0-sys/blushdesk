@@ -6,6 +6,7 @@ import com.blushdesk.app.data.local.database.ExportSummary
 import com.blushdesk.app.data.local.database.OperatorProfile
 import com.blushdesk.app.data.local.database.OrderWithItems
 import com.blushdesk.app.domain.model.ExportSnapshot
+import com.blushdesk.app.domain.model.PaymentStatus
 import com.blushdesk.app.ui.theme.BrandPalette
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -67,7 +68,7 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
                 XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook)
 
                 workbook.properties.coreProperties.apply {
-                    creator = "BlushDesk"
+                    creator = APP_NAME
                     title = "${snapshot.operator.storeName.ifBlank { "Showroom" }} export"
                 }
                 FileOutputStream(raw).use { workbook.write(it) }
@@ -121,7 +122,8 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
      * The sheet to read on a tablet: each order's products as Product Name / Quantity / Price /
      * Total Amount, newest order first, each order with its total and a grand total at the end.
      * The totals are formulas, so the sheet still adds up if someone edits a quantity or price in
-     * Excel. The grand total adds the rows labelled [ORDER_TOTAL_LABEL].
+     * Excel. The grand total adds the rows labelled [ORDER_TOTAL_LABEL]. Each total row also says
+     * whether that order is [PAID] or [NOT_YET_PAID], so a printout shows who still owes.
      */
     private fun writeItems(sheet: XSSFSheet, styles: Styles, buyers: List<BuyerWithOrders>) {
         writeHeader(sheet, styles, ITEM_COLUMNS, widths = listOf(40, 12, 16, 18))
@@ -157,6 +159,8 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
                 row++
             }
             sheet.createRow(row).apply {
+                val paid = order.paymentStatus.isPaid
+                text(0, if (paid) PAID else NOT_YET_PAID, styles.badge(BrandPalette.tone(if (paid) PaymentStatus.PAID else PaymentStatus.UNPAID)))
                 text(2, ORDER_TOTAL_LABEL, styles.orderTotalLabel)
                 formula(3, "SUM(D$firstLine:D$row)", styles.body(Kind.MONEY_BOLD, false))
             }
@@ -175,7 +179,7 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
     // ---- Worksheet 2: Buyers ----------------------------------------------------------------
 
     private fun writeBuyers(sheet: XSSFSheet, styles: Styles, buyers: List<BuyerWithOrders>) {
-        writeHeader(sheet, styles, BUYER_COLUMNS, widths = listOf(10, 26, 18, 24, 30, 16, 18))
+        writeHeader(sheet, styles, BUYER_COLUMNS, widths = listOf(10, 26, 18, 24, 30, 16, 18, 18))
         buyers.forEachIndexed { index, (buyer, orders) ->
             val zebra = index % 2 == 1
             sheet.createRow(index + 1).apply {
@@ -189,9 +193,25 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
                     cellStyle = styles.body(Kind.DATE, zebra)
                 }
                 number(6, orders.size.toDouble(), styles.body(Kind.COUNT, zebra))
+                when (val status = buyerPaymentStatus(orders)) {
+                    PAID -> text(7, status, styles.badge(BrandPalette.tone(PaymentStatus.PAID)))
+                    NOT_YET_PAID -> text(7, status, styles.badge(BrandPalette.tone(PaymentStatus.UNPAID)))
+                    else -> text(7, status, styles.body(Kind.TEXT, zebra))
+                }
             }
         }
         finishTable(sheet, BUYER_COLUMNS.size, buyers.size)
+    }
+
+    /**
+     * A buyer is [PAID] once every one of their orders is marked Paid, and [NOT_YET_PAID] while any
+     * order is still Unpaid or Pending. A buyer without orders owes nothing but has not paid
+     * anything either, so they get [NO_ORDERS] rather than a misleading "Paid".
+     */
+    private fun buyerPaymentStatus(orders: List<OrderWithItems>): String = when {
+        orders.isEmpty() -> NO_ORDERS
+        orders.all { it.order.paymentStatus.isPaid } -> PAID
+        else -> NOT_YET_PAID
     }
 
     // ---- Worksheet 3: Orders ----------------------------------------------------------------
@@ -489,7 +509,14 @@ class ExcelExporter(private val zone: ZoneId = ZoneId.systemDefault()) {
             // Not in the original specification: the alternative to a contact number.
             "Facebook Name",
             "Email", "Date Added", "Number of Orders",
+            // Not in the original specification: whether the buyer has paid for everything.
+            "Payment Status",
         )
+
+        /** The buyer's (Buyers sheet) or the order's (Items sheet) payment, in the client's words. */
+        const val PAID = "Paid"
+        const val NOT_YET_PAID = "Not Yet Paid"
+        const val NO_ORDERS = "No orders"
 
         val ORDER_COLUMNS = listOf(
             "Order ID", "Buyer ID", "Buyer Name", "Product", "Unit Price", "Quantity", "Total Amount",

@@ -7,16 +7,16 @@
           - Photos from the gallery come through the system Photo Picker (the user shares one image).
           - Camera photos are taken by the device's camera app and handed back through FileProvider,
             so the CAMERA permission is never requested.
-          - Receipts are copied to Downloads through MediaStore, which needs no storage permission
-            on API 29+ (the app's minSdk).
-          - Excel files and PDFs are shared as content:// URIs, not through shared storage.
+          - Receipts and downloaded Excel files are copied to Downloads through MediaStore, which
+            needs no storage permission on API 29+ (the app's minSdk).
+          - Shared Excel files and PDFs go out as content:// URIs, not through shared storage.
         The app is fully offline, so INTERNET is not declared either.
     -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
-        android:name=".BlushDeskApp"
+        android:name=".FergBentablesApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BlushDesk">
+        android:theme="@style/Theme.FergBentables">
 
         <!--
             Landscape is the designed orientation. Android 16 ignores orientation locks on large

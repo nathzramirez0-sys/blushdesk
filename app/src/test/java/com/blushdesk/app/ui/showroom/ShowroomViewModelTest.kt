@@ -379,12 +379,52 @@ class ShowroomViewModelTest {
     fun `excel export shares the workbook and clears the exporting flag`() = runTest {
         val events = observe()
 
-        vm.exportToExcel()
+        vm.shareExcel()
         advanceUntilIdle()
 
         assertEquals(1, docs.workbooksCreated)
         assertEquals("export.xlsx", events.filterIsInstance<UiEvent.ShareWorkbook>().single().export.displayName)
+        assertTrue(docs.downloaded.isEmpty())
         assertFalse(vm.uiState.value.exporting)
+    }
+
+    @Test
+    fun `downloading the excel file saves it to Downloads and says where, without sharing`() = runTest {
+        val events = observe()
+
+        vm.downloadExcel()
+        advanceUntilIdle()
+
+        assertEquals(1, docs.workbooksCreated)
+        assertEquals(listOf("export.xlsx"), docs.downloaded)
+        val saved = events.single() as UiEvent.WorkbookSaved
+        assertEquals("export.xlsx", saved.export.displayName)
+        assertEquals("Download/FergBentables/export.xlsx", saved.savedTo)
+        assertFalse(vm.uiState.value.exporting)
+    }
+
+    @Test
+    fun `a failed download is reported and the buttons work again`() = runTest {
+        val events = observe()
+        docs.downloadFailure = java.io.IOException("Could not write to Downloads")
+
+        vm.downloadExcel()
+        advanceUntilIdle()
+
+        assertEquals("Couldn't save the Excel file to this device. Please try again.", (events.single() as UiEvent.Error).message)
+        assertFalse(vm.uiState.value.exporting)
+    }
+
+    @Test
+    fun `downloading with nothing to export shows the reason`() = runTest {
+        val events = observe()
+        docs.failure = UserFacingException("There is nothing to export yet. Add a buyer first.")
+
+        vm.downloadExcel()
+        advanceUntilIdle()
+
+        assertEquals("There is nothing to export yet. Add a buyer first.", (events.single() as UiEvent.Error).message)
+        assertTrue(docs.downloaded.isEmpty())
     }
 
     @Test
@@ -392,7 +432,7 @@ class ShowroomViewModelTest {
         val events = observe()
         docs.failure = IllegalStateException("org.apache.poi.ooxml.POIXMLException: boom")
 
-        vm.exportToExcel()
+        vm.shareExcel()
         advanceUntilIdle()
 
         assertEquals("Couldn't create the Excel file. Please try again.", (events.single() as UiEvent.Error).message)

@@ -20,6 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BlushDesk"
+rootProject.name = "FergBentables"
 
 include(":app")

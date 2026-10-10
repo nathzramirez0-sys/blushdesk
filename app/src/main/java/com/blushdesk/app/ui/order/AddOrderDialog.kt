@@ -143,7 +143,10 @@ internal fun OrderFormDialog(
     val drafts = rememberSaveable(saver = ItemDraftsSaver) {
         (initial?.items?.map(ItemDraft::of) ?: listOf(ItemDraft())).toMutableStateList()
     }
-    var purchasedAtMillis by rememberSaveable { mutableLongStateOf((details?.purchaseDateTime ?: Instant.now()).toEpochMilli()) }
+    // The starting values, kept so the form can tell whether anything was changed.
+    val startDrafts = remember(initial) { initial?.items?.map(ItemDraft::of) ?: listOf(ItemDraft()) }
+    val startMillis = rememberSaveable { (details?.purchaseDateTime ?: Instant.now()).toEpochMilli() }
+    var purchasedAtMillis by rememberSaveable { mutableLongStateOf(startMillis) }
     var mode by rememberSaveable { mutableStateOf(details?.paymentMode ?: PaymentMode.CASH) }
     var payment by rememberSaveable { mutableStateOf(details?.paymentStatus ?: PaymentStatus.UNPAID) }
     var stage by rememberSaveable { mutableStateOf(details?.fulfillmentStatus ?: FulfillmentStatus.PROCESSING) }
@@ -157,11 +160,17 @@ internal fun OrderFormDialog(
     val local = Instant.ofEpochMilli(purchasedAtMillis).atZone(zone).toLocalDateTime()
     val allValid = drafts.all { it.isValid }
     val orderTotal = if (allValid) drafts.fold(Money.ZERO) { sum, d -> sum + d.lineTotal!! } else null
+    val hasChanges = drafts.toList() != startDrafts ||
+        purchasedAtMillis != startMillis ||
+        mode != (details?.paymentMode ?: PaymentMode.CASH) ||
+        payment != (details?.paymentStatus ?: PaymentStatus.UNPAID) ||
+        stage != (details?.fulfillmentStatus ?: FulfillmentStatus.PROCESSING)
 
     FormDialog(
         title = if (initial == null) "New order for $buyerName" else "Edit order",
         confirmLabel = if (initial == null) "Add order" else "Save",
         onDismiss = onDismiss,
+        hasUnsavedChanges = hasChanges,
         onConfirm = {
             attempted = true
             if (allValid && drafts.isNotEmpty()) {
